@@ -3,7 +3,6 @@ const fs = require('fs/promises');
 const del = require('del');
 const path = require('path');
 const yaml = require('js-yaml');
-const YAWN = require('yawn-yaml/cjs');
 const degit = require('degit');
 const chalk = require('chalk');
 const globby = require('globby');
@@ -19,12 +18,12 @@ async function applyTemplate(filename, source) {
 	let env;
 	const localWorkflowContent = await fs.readFile(localWorkflowPath, 'utf8').catch(() => undefined);
 	if (localWorkflowContent) {
-		const localData = new YAWN(localWorkflowContent);
-		if (localData.json.env) {
-			const templateData = new YAWN(await templateContent);
-			env = Object.assign({}, templateData.json.env, localData.json.env);
-			delete templateData.json.env;
-			templateContent = templateData.yaml;
+		const localData = yaml.safeLoad(localWorkflowContent);
+		if (localData.env) {
+			const templateData = yaml.safeLoad(await templateContent);
+			env = Object.assign({}, templateData.env, localData.env);
+			delete templateData.env;
+			templateContent = yaml.safeDump(templateData);
 		}
 	}
 
