@@ -1,13 +1,14 @@
+'use strict';
+const fs = require('fs/promises');
+const del = require('del');
 const path = require('path');
+const yaml = require('js-yaml');
+const YAWN = require('yawn-yaml/cjs');
 const degit = require('degit');
 const chalk = require('chalk');
-const del = require('del');
 const globby = require('globby');
-const fs = require('fs/promises');
 const mkdirp = require('mkdirp');
 const {outdent} = require('outdent');
-const YAWN = require('yawn-yaml/cjs');
-const yaml = require('js-yaml');
 
 const temporaryDirectory = '.ghat-temp';
 const commitRegex = /^found matching commit hash: ([\da-f]{40})$/;
