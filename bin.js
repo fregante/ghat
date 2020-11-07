@@ -8,7 +8,7 @@ const cli = meow(`
 	  $ ghat <source>
 
 	Examples
-	  $ ghat fregante/workflows/npm.yml
+	  $ ghat fregante/ghat/templates/node
 `);
 
 ghat(cli.input[0]).then(console.log, error => {
