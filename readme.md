@@ -5,7 +5,7 @@
 ## Usage
 
 ```sh
-npx ghat fregante/workflows/node.yml
+npx ghat fregante/ghat/templates/node
 ```
 
 ## License
