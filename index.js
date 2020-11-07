@@ -85,7 +85,7 @@ async function ghat(source) {
 	}
 
 	mkdirp.sync('.github/workflows');
-	await Promise.all(templates.map(applyTemplate));
+	await Promise.all(templates.map(template => applyTemplate(template, source)));
 	await del(temporaryDirectory);
 }
 
