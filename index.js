@@ -4,13 +4,11 @@ const del = require('del');
 const path = require('path');
 const yaml = require('js-yaml');
 const degit = require('degit');
-const chalk = require('chalk');
 const globby = require('globby');
 const mkdirp = require('mkdirp');
 const {outdent} = require('outdent');
 
 const temporaryDirectory = '.ghat-temp';
-const commitRegex = /^found matching commit hash: ([\da-f]{40})$/;
 
 async function applyTemplate(filename, source) {
 	let templateContent = fs.readFile(path.join(temporaryDirectory, filename), 'utf8');
@@ -55,24 +53,6 @@ async function ghat(source) {
 	const getter = degit(source, {
 		force: true,
 		verbose: true
-	});
-	let commit;
-
-	getter.on('info', event => {
-		const commitMatch = commitRegex.exec(event.message);
-		if (commitMatch) {
-			commit = commitMatch[1];
-			console.log('got', commit);
-			return;
-		}
-
-		console.error(chalk.cyan(`> ${event.message.replace('options.', '--')}`));
-	});
-
-	getter.on('warn', event => {
-		console.error(
-			chalk.magenta(`! ${event.message.replace('options.', '--')}`)
-		);
 	});
 
 	const parsedPath = getter.repo.subdir && path.parse(getter.repo.subdir);
