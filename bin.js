@@ -11,7 +11,4 @@ const cli = meow(`
 	  $ ghat fregante/ghat/templates/node
 `);
 
-ghat(cli.input[0]).then(console.log, error => {
-	console.error(error.stack);
-	process.exit(1);
-});
+ghat(cli.input[0]);
