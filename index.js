@@ -36,7 +36,7 @@ async function applyTemplate(filename, source) {
 		delete remote.parsed.env;
 
 		// Update workflow string, only now that is necessary
-		remote.string = yaml.safeDump(remote.parsed);
+		remote.string = yaml.safeDump(remote.parsed, {noCompatMode: true});
 	}
 
 	await fs.writeFile(localWorkflowPath, outdent`
