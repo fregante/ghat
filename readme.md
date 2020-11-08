@@ -14,6 +14,20 @@ This repository has a few [templates](https://github.com/fregante/ghat/tree/mast
 
 You can refer to [degit’s documentation](https://github.com/Rich-Harris/degit#basics) to find out what other source formats are allowed (including specifying branches, commits and other references).
 
+```sh
+$ ghat --help
+
+  Usage
+    $ ghat <source>
+
+  Examples
+    $ ghat fregante/ghat/templates/node
+    $ ghat fregante/ghat/templates/node --exclude jobs.Build --exclude jobs.Test
+
+  Options:
+    --exclude <dot.notation.object>  Any part of the YAML file to be removed (can be repeated)
+```
+
 ### Fetch repo
 
 If you provide a user/repo address, `ghat` will fetch the repository and look for `*.yml` files at the top level. If none are found, it will assume you want to copy the repo’s active workflows from `.github/workflows`
@@ -37,7 +51,13 @@ npx ghat fregante/ghat/templates/node/ci.yml
 # Copies templates/node/ci.yml into .github/workflows/ci.yml
 ```
 
-## Customizing the templates
+## Customization
+
+### Exclude properties
+
+You can exclude any property from the template by using the `--exclude` flag multiple times. This will [delete](https://github.com/sindresorhus/dot-prop) each of the specified values dot notations.
+
+### `env` object
 
 When you fetch a workflow that already exists locally, the local file will be overridden, except for the top-level `env` object. For example:
 
