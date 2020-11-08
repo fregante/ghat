@@ -1,6 +1,6 @@
 {
 	"name": "ghat",
-	"version": "0.0.0",
+	"version": "0.1.0",
 	"description": "Reuse existing GitHub Action workflows across repositories",
 	"keywords": [],
 	"repository": "fregante/ghat",
