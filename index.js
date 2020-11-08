@@ -36,7 +36,7 @@ async function applyTemplate(filename, source) {
 
 async function getWorkflows() {
 	// Expect to find workflows in the specified folder or "workflow template repo"
-	const local = await globby('*.ya?ml', {
+	const local = await globby('*.+(yml|yaml)', {
 		cwd: temporaryDirectory
 	});
 	if (local.length > 0) {
@@ -44,7 +44,7 @@ async function getWorkflows() {
 	}
 
 	// If not, the user probably wants to copy workflows from a regular repo
-	return globby('.github/workflows/*.ya?ml', {
+	return globby('.github/workflows/*.+(yml|yaml)', {
 		cwd: temporaryDirectory
 	});
 }
