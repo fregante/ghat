@@ -1,14 +1,12 @@
 'use strict';
 const fs = require('fs/promises');
-const del = require('del');
 const path = require('path');
 const yaml = require('js-yaml');
 const degit = require('degit');
+const tempy = require('tempy');
 const globby = require('globby');
 const mkdirp = require('mkdirp');
 const {outdent} = require('outdent');
-
-const temporaryDirectory = '.ghat-temp';
 
 async function loadYamlFile(path) {
 	const string = await fs.readFile(path, 'utf8').catch(() => '');
@@ -18,7 +16,7 @@ async function loadYamlFile(path) {
 	};
 }
 
-async function applyTemplate(filename, source) {
+async function applyTemplate({filename, source, temporaryDirectory}) {
 	const localWorkflowPath = path.join('.github/workflows', path.basename(filename));
 	const remoteWorkflowPath = path.join(temporaryDirectory, filename);
 	const [local, remote] = await Promise.all([
@@ -48,19 +46,15 @@ async function applyTemplate(filename, source) {
 	);
 }
 
-async function getWorkflows() {
+async function getWorkflows(cwd) {
 	// Expect to find workflows in the specified folder or "workflow template repo"
-	const local = await globby('*.+(yml|yaml)', {
-		cwd: temporaryDirectory
-	});
+	const local = await globby('*.+(yml|yaml)', {cwd});
 	if (local.length > 0) {
 		return local;
 	}
 
 	// If not, the user probably wants to copy workflows from a regular repo
-	return globby('.github/workflows/*.+(yml|yaml)', {
-		cwd: temporaryDirectory
-	});
+	return globby('.github/workflows/*.+(yml|yaml)', {cwd});
 }
 
 async function ghat(source) {
@@ -69,18 +63,20 @@ async function ghat(source) {
 		verbose: true
 	});
 
-	const parsedPath = getter.repo.subdir && path.parse(getter.repo.subdir);
-	await del(temporaryDirectory);
-	await getter.clone(path.join(temporaryDirectory, (parsedPath?.ext ? parsedPath.base : '')));
+	tempy.directory.task(async temporaryDirectory => {
+		const file = getter.repo.subdir && path.parse(getter.repo.subdir);
 
-	const templates = await getWorkflows();
-	if (templates.length === 0) {
-		throw new Error('No workflows found in ' + source);
-	}
+		// If `source` points to a file, .clone() must receive a path to the file
+		await getter.clone(file?.ext ? path.join(temporaryDirectory, file.base) : temporaryDirectory);
 
-	mkdirp.sync('.github/workflows');
-	await Promise.all(templates.map(template => applyTemplate(template, source)));
-	await del(temporaryDirectory);
+		const templates = await getWorkflows(temporaryDirectory);
+		if (templates.length === 0) {
+			throw new Error('No workflows found in ' + source);
+		}
+
+		mkdirp.sync('.github/workflows');
+		await Promise.all(templates.map(filename => applyTemplate({filename, source, temporaryDirectory})));
+	});
 }
 
 module.exports = ghat;
