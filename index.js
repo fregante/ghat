@@ -8,6 +8,8 @@ const globby = require('globby');
 const mkdirp = require('mkdirp');
 const {outdent} = require('outdent');
 
+class InputError extends Error {}
+
 async function loadYamlFile(path) {
 	const string = await fs.readFile(path, 'utf8').catch(() => '');
 	return {
@@ -30,7 +32,7 @@ async function applyTemplate({filename, source, temporaryDirectory}) {
 		// Merge env objects, allowing the local to override the remote
 		env = {...remote.parsed.env, ...local.parsed?.env};
 
-		// Move the env object on top
+		// Hide remote env object so it can be displayed on the top later
 		delete remote.parsed.env;
 
 		// Update workflow string, only now that is necessary
@@ -58,12 +60,16 @@ async function getWorkflows(cwd) {
 }
 
 async function ghat(source) {
+	if (!source) {
+		throw new InputError('No source was specified');
+	}
+
 	const getter = degit(source, {
 		force: true,
 		verbose: true
 	});
 
-	tempy.directory.task(async temporaryDirectory => {
+	return tempy.directory.task(async temporaryDirectory => {
 		const file = getter.repo.subdir && path.parse(getter.repo.subdir);
 
 		// If `source` points to a file, .clone() must receive a path to the file
@@ -71,7 +77,7 @@ async function ghat(source) {
 
 		const templates = await getWorkflows(temporaryDirectory);
 		if (templates.length === 0) {
-			throw new Error('No workflows found in ' + source);
+			throw new InputError('No workflows found in ' + source);
 		}
 
 		mkdirp.sync('.github/workflows');
@@ -80,3 +86,4 @@ async function ghat(source) {
 }
 
 module.exports = ghat;
+module.exports.InputError = InputError;

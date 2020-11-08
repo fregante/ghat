@@ -11,4 +11,15 @@ const cli = meow(`
 	  $ ghat fregante/ghat/templates/node
 `);
 
-ghat(cli.input[0]);
+if (cli.input.length === 0) {
+	cli.showHelp();
+} else {
+	ghat(cli.input[0], cli.flags).catch(error => {
+		if (error instanceof ghat.InputError) {
+			console.error('❌', error.message);
+			cli.showHelp();
+		} else {
+			throw error;
+		}
+	});
+}
