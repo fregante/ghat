@@ -30,18 +30,18 @@ $ ghat --help
 
 ### Fetch repo
 
-If you provide a user/repo address, `ghat` will fetch the repository and look for `*.yml` files at the top level. If none are found, it will assume you want to copy the repo’s active workflows from `.github/workflows`
+If you provide a user/repo address, `ghat` will fetch the repository and look for `*.yml`/`*.yaml` files at the top level. If none are found, it will assume you want to copy the repo’s active workflows from `.github/workflows`
 
 ```sh
 npx ghat fregante/ghat
-# Copies *.ya?ml OR .github/workflows/*.ya?ml
+# Copies *.yml OR .github/workflows/*.yml
 ```
 
 ### Fetch whole folder
 
 ```sh
 npx ghat fregante/ghat/templates/node
-# Copies templates/node/*.ya?ml into .github/workflows. It's NOT recursive
+# Copies templates/node/*.yml into .github/workflows. It's NOT recursive
 ```
 
 ### Fetch specific file
