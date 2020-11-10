@@ -4,7 +4,6 @@ const fs = require('fs/promises');
 const path = require('path');
 const yaml = require('js-yaml');
 const degit = require('degit');
-const globby = require('globby');
 const dotProp = require('dot-prop');
 const {outdent} = require('outdent');
 
@@ -18,15 +17,28 @@ async function loadYamlFile(path) {
 	};
 }
 
-async function getWorkflows(cwd) {
+async function findYamlFiles(path) {
+	try {
+		const contents = await fs.readdir(path);
+		return contents.filter(filename => /\.ya?ml$/.test(filename));
+	} catch (error) {
+		if (error.message.startsWith('ENOENT')) {
+			return [];
+		}
+
+		throw error;
+	}
+}
+
+async function getWorkflows(directory) {
 	// Expect to find workflows in the specified folder or "workflow template repo"
-	const local = await globby('*.+(yml|yaml)', {cwd});
+	const local = await findYamlFiles(directory);
 	if (local.length > 0) {
 		return local;
 	}
 
 	// If not, the user probably wants to copy workflows from a regular repo
-	return globby('.github/workflows/*.+(yml|yaml)', {cwd});
+	return findYamlFiles(path.join(directory, '.github/workflows'));
 }
 
 async function ghat(source, {exclude, command}) {
