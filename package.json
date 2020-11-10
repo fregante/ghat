@@ -1,8 +1,21 @@
 {
 	"name": "ghat",
 	"version": "0.3.0",
-	"description": "Reuse GitHub Action workflows across repositories",
-	"keywords": [],
+	"description": "Reuse GitHub Actions workflows across repositories",
+	"keywords": [
+		"github",
+		"actions",
+		"workflows",
+		"share",
+		"templating",
+		"template",
+		"download",
+		"shareable",
+		"update",
+		"import",
+		"require",
+		"scaffolding"
+	],
 	"repository": "fregante/ghat",
 	"license": "MIT",
 	"author": "Federico Brigante <me@fregante.com> (fregante.com)",

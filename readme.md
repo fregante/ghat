@@ -1,6 +1,6 @@
 # 🛕 ghat
 
-> Reuse GitHub Action workflows across repositories
+> Reuse GitHub Actions workflows across repositories
 
 You can run `ghat` **once** to set up your workflow in a new repo or run it every time you want to update it.
 
