@@ -10,9 +10,7 @@ _Note: `ghat` is a tool that runs on your computer, not on GitHub Actions, and r
 
 ## Usage
 
-This repository has a few [templates](https://github.com/fregante/ghat/tree/master/templates) you can use, but `ghat` can fetch any repository or specific file within it — exactly like [degit](https://github.com/Rich-Harris/degit) can, the tool `ghat` is based on.
-
-You can refer to [degit’s documentation](https://github.com/Rich-Harris/degit#basics) to find out what other source formats are allowed (including specifying branches, commits and other references).
+`ghat` can fetch any repository or specific file within it (passing the address to [degit](https://github.com/Rich-Harris/degit#basics) internally). Below you can find some examples using the workflows in [fregante/ghatemplates](https://github.com/fregante/ghatemplates).
 
 ```sh
 $ ghat --help
@@ -21,34 +19,35 @@ $ ghat --help
     $ ghat <source>
 
   Examples
-    $ ghat fregante/ghat/templates/node
-    $ ghat fregante/ghat/templates/node --exclude jobs.Build --exclude jobs.Test
+    $ ghat fregante/ghatemplates/node
+    $ ghat fregante/ghatemplates/node --exclude jobs.Build --exclude jobs.Test
+    $ ghat fregante/ghatemplates/node/build.yml
 
   Options:
-    --exclude <dot.notation.object>  Any part of the YAML file to be removed (can be repeated)
+    --exclude <dot.notation.path>  Any part of the YAML file to be removed (can be repeated)
 ```
 
 ### Fetch repo
 
-If you provide a user/repo address, `ghat` will fetch the repository and look for `*.yml` files at the top level. If none are found, it will assume you want to copy the repo’s active workflows from `.github/workflows`
+If you provide a user/repo address, `ghat` will fetch the repository and look for `*.yml`/`*.yaml` files at the top level. If none are found, it will assume you want to copy the repo’s active workflows from `.github/workflows`
 
 ```sh
 npx ghat fregante/ghat
-# Copies *.ya?ml OR .github/workflows/*.ya?ml
+# Copies *.yml OR .github/workflows/*.yml
 ```
 
 ### Fetch whole folder
 
 ```sh
-npx ghat fregante/ghat/templates/node
-# Copies templates/node/*.ya?ml into .github/workflows. It's NOT recursive
+npx ghat fregante/ghatemplates/node
+# Copies node/*.yml into the local .github/workflows. It's NOT recursive
 ```
 
 ### Fetch specific file
 
 ```sh
-npx ghat fregante/ghat/templates/node/ci.yml
-# Copies templates/node/ci.yml into .github/workflows/ci.yml
+npx ghat fregante/ghatemplates/node/build.yml
+# Copies node/build.yml into the local .github/workflows/build.yml
 ```
 
 ## Customization

@@ -1,0 +1,18 @@
+env: {}
+
+# DO NOT EDIT BELOW - use `npx ghat fregante/ghatemplates/node/build.yml`
+
+name: CI
+
+on:
+  - pull_request
+  - push
+
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: install
+        run: if [ -z ${{ hashFiles('package-lock.json', 'npm-shrinkwrap.json') }} ]; then npm install; else npm ci; fi;
+      - run: npm run build

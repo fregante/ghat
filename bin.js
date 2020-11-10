@@ -8,11 +8,12 @@ const cli = meow(`
 	  $ ghat <source>
 
 	Examples
-	  $ ghat fregante/ghat/templates/node
-	  $ ghat fregante/ghat/templates/node --exclude jobs.Build --exclude jobs.Test
+	  $ ghat fregante/ghatemplates/node
+	  $ ghat fregante/ghatemplates/node --exclude jobs.Build --exclude jobs.Test
+	  $ ghat fregante/ghatemplates/node/build.yml
 
 	Options:
-	  --exclude <dot.notation.object>  Any part of the YAML file to be removed (can be repeated)
+	  --exclude <dot.notation.path>  Any part of the YAML file to be removed (can be repeated)
 `, {
 	flags: {
 		exclude: {
