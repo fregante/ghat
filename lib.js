@@ -18,39 +18,6 @@ async function loadYamlFile(path) {
 	};
 }
 
-async function applyTemplate({filename, temporaryDirectory, exclude, command}) {
-	const localWorkflowPath = path.join('.github/workflows', path.basename(filename));
-	const remoteWorkflowPath = path.join(temporaryDirectory, filename);
-	const [local, remote] = await Promise.all([
-		loadYamlFile(localWorkflowPath),
-		loadYamlFile(remoteWorkflowPath)
-	]);
-
-	// Merge ENV objects if any, allowing the local to override the remote
-	const env = {...remote.parsed.env, ...local.parsed?.env};
-
-	// If the remote has any ENVs, they need to be dropped
-	if (remote.parsed.env && Object.keys(remote.parsed.env).length > 0) {
-		delete remote.parsed.env;
-		remote.string = yaml.safeDump(remote.parsed, {noCompatMode: true});
-	}
-
-	if (exclude.length > 0) {
-		for (const path of exclude) {
-			dotProp.delete(remote.parsed, path);
-		}
-
-		remote.string = yaml.safeDump(remote.parsed, {noCompatMode: true});
-	}
-
-	await fs.writeFile(localWorkflowPath, outdent`
-		${yaml.safeDump({env})}
-		# DO NOT EDIT BELOW - use \`npx ghat ${command}\`
-
-		${await remote.string}`
-	);
-}
-
 async function getWorkflows(cwd) {
 	// Expect to find workflows in the specified folder or "workflow template repo"
 	const local = await globby('*.+(yml|yaml)', {cwd});
@@ -76,17 +43,50 @@ async function ghat(source, {exclude, command}) {
 	const file = getter.repo.subdir && path.parse(getter.repo.subdir);
 
 	// If `source` points to a file, .clone() must receive a path to the file
-	await getter.clone(file?.ext ? path.join(temporaryDirectory, file.base) : temporaryDirectory);
+	const destination = file?.ext ? path.join(temporaryDirectory, file.base) : temporaryDirectory;
+	await getter.clone(destination);
 
 	const templates = await getWorkflows(temporaryDirectory);
 	if (templates.length === 0) {
 		throw new InputError('No workflows found in ' + source);
 	}
 
-	await fs.mkdir('.github/workflows', {
-		recursive: true
-	});
-	await Promise.all(templates.map(filename => applyTemplate({filename, temporaryDirectory, exclude, command})));
+	await fs.mkdir('.github/workflows', {recursive: true});
+
+	const applyTemplate = async filename => {
+		const localWorkflowPath = path.join('.github/workflows', path.basename(filename));
+		const remoteWorkflowPath = path.join(temporaryDirectory, filename);
+		const [local, remote] = await Promise.all([
+			loadYamlFile(localWorkflowPath),
+			loadYamlFile(remoteWorkflowPath)
+		]);
+
+		// Merge ENV objects if any, allowing the local to override the remote
+		const env = {...remote.parsed.env, ...local.parsed?.env};
+
+		// If the remote has any ENVs, they need to be dropped
+		if (remote.parsed.env && Object.keys(remote.parsed.env).length > 0) {
+			delete remote.parsed.env;
+			remote.string = yaml.safeDump(remote.parsed, {noCompatMode: true});
+		}
+
+		if (exclude.length > 0) {
+			for (const path of exclude) {
+				dotProp.delete(remote.parsed, path);
+			}
+
+			remote.string = yaml.safeDump(remote.parsed, {noCompatMode: true});
+		}
+
+		await fs.writeFile(localWorkflowPath, outdent`
+			${yaml.safeDump({env})}
+			# DO NOT EDIT BELOW - use \`npx ghat ${command}\`
+
+			${await remote.string}`
+		);
+	};
+
+	await Promise.all(templates.map(filename => applyTemplate(filename)));
 }
 
 module.exports = ghat;
