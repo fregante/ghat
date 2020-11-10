@@ -2,15 +2,18 @@
 
 > Reuse GitHub Action workflows across repositories
 
-Stop maintaining a separate workflow for every one of your repository, use `ghat` to sync them with your favorite version.
+You can run `ghat` **once** to set up your workflow in a new repo or run it every time you want to update it.
 
-You can run `ghat` **once** to set up your workflow in a new repo or run it every time you want to update it. Updating existing workflows will override any changes except for the global `env` object, which will be merged with the templates’s existing `env` object.
+1. Write workflows once, use them on any repository
+2. Update your workflows without copy-pasting YAML code
+3. Preserve [local `env` variables](#env-object)
+4. Customize workflows by [excluding jobs](#exclude-properties)
 
 _Note: `ghat` is a tool that runs on your computer, not on GitHub Actions, and requires you to commit the changes,_ so you can be sure that the workflow never changes without you agreeing to it.
 
 ## Usage
 
-`ghat` can fetch any repository or specific file within it (passing the address to [degit](https://github.com/Rich-Harris/degit#basics) internally). Below you can find some examples using the workflows in [fregante/ghatemplates](https://github.com/fregante/ghatemplates).
+`ghat` uses [degit](https://github.com/Rich-Harris/degit#basics) to fetch any repository or specific file/folder within it. Below you can find some examples using the workflows in [fregante/ghatemplates](https://github.com/fregante/ghatemplates).
 
 ```sh
 $ ghat --help
