@@ -6,18 +6,17 @@
 	"repository": "fregante/ghat",
 	"license": "MIT",
 	"author": "Federico Brigante <me@fregante.com> (fregante.com)",
-	"bin": "bin.js",
+	"bin": "dist/index.js",
 	"files": [
-		"bin.js",
-		"index.js"
+		"dist/index.js"
 	],
 	"scripts": {
-		"test": "xo"
+		"build": "ncc build bin.js",
+		"prepack": "npm run build",
+		"test": "npm run build && xo"
 	},
 	"devDependencies": {
-		"xo": "^0.33.1"
-	},
-	"dependencies": {
+		"@vercel/ncc": "^0.25.1",
 		"degit": "^2.8.0",
 		"dot-prop": "^6.0.0",
 		"globby": "^11.0.1",
@@ -25,6 +24,7 @@
 		"meow": "^8.0.0",
 		"mkdirp": "^1.0.4",
 		"outdent": "^0.7.1",
-		"tempy": "^1.0.0"
+		"tempy": "^1.0.0",
+		"xo": "^0.34.2"
 	}
 }
