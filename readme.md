@@ -21,7 +21,7 @@ $ ghat --help
   Examples
     $ ghat fregante/ghatemplates/node
     $ ghat fregante/ghatemplates/node --exclude jobs.Build --exclude jobs.Test
-    $ ghat fregante/ghatemplates/node/build.yml
+    $ ghat fregante/ghatemplates/node/ci.yml
 
   Options:
     --exclude <dot.notation.path>  Any part of the YAML file to be removed (can be repeated)
@@ -46,8 +46,8 @@ npx ghat fregante/ghatemplates/node
 ### Fetch specific file
 
 ```sh
-npx ghat fregante/ghatemplates/node/build.yml
-# Copies node/build.yml into the local .github/workflows/build.yml
+npx ghat fregante/ghatemplates/node/ci.yml
+# Copies node/ci.yml into the local .github/workflows/ci.yml
 ```
 
 ## Customization
