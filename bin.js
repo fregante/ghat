@@ -1,38 +1,31 @@
 #!/usr/bin/env node
 'use strict';
-const meow = require('meow');
+const sade = require('sade');
 const ghat = require('./lib');
+const pkg = require('./package.json');
 
-const cli = meow(`
-	Usage
-	  $ ghat <source>
-
-	Examples
-	  $ ghat fregante/ghatemplates/node
-	  $ ghat fregante/ghatemplates/node --exclude jobs.Build --exclude jobs.Test
-	  $ ghat fregante/ghatemplates/node/build.yml
-
-	Options:
-	  --exclude <dot.notation.path>  Any part of the YAML file to be removed (can be repeated)
-`, {
-	flags: {
-		exclude: {
-			type: 'string',
-			isMultiple: true
+const prog = sade(pkg.name + ' <source>', true)
+	.version(pkg.version)
+	.describe(pkg.description)
+	.example('fregante/ghatemplates/node')
+	.example('fregante/ghatemplates/node --exclude jobs.Build --exclude jobs.Test')
+	.example('fregante/ghatemplates/node/build.yml')
+	.option('--exclude', 'Any part of the YAML file to be removed (can be repeated) specified as a dot.notation.path')
+	.action((source, options) => {
+		const command = process.argv.slice(2).join(' ');
+		if (typeof options.exclude === 'string') {
+			options.exclude = [options.exclude];
+		} else if (!options.exclude) {
+			options.exclude = [];
 		}
-	}
-});
 
-if (cli.input.length === 0) {
-	cli.showHelp();
-} else {
-	const command = process.argv.slice(2).join(' ');
-	ghat(cli.input[0], {...cli.flags, command}).catch(error => {
-		if (error instanceof ghat.InputError) {
-			console.error('❌', error.message);
-			cli.showHelp();
-		} else {
-			throw error;
-		}
-	});
-}
+		ghat(source, {...options, command}).catch(error => {
+			if (error instanceof ghat.InputError) {
+				console.error('❌', error.message);
+				prog.help();
+			} else {
+				throw error;
+			}
+		});
+	})
+	.parse(process.argv);

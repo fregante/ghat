@@ -18,16 +18,21 @@ _Note: `ghat` is a tool that runs on your computer, not on GitHub Actions, and r
 ```sh
 $ ghat --help
 
+  Description
+    Reuse GitHub Actions workflows across repositories
+
   Usage
-    $ ghat <source>
+    $ ghat <source> [options]
+
+  Options
+    --exclude        Any part of the YAML file to be removed (can be repeated) specified as a dot.notation.path
+    -v, --version    Displays current version
+    -h, --help       Displays this message
 
   Examples
     $ ghat fregante/ghatemplates/node
     $ ghat fregante/ghatemplates/node --exclude jobs.Build --exclude jobs.Test
-    $ ghat fregante/ghatemplates/node/ci.yml
-
-  Options:
-    --exclude <dot.notation.path>  Any part of the YAML file to be removed (can be repeated)
+    $ ghat fregante/ghatemplates/node/build.yml
 ```
 
 ### Fetch repo
