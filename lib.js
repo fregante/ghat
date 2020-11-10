@@ -27,16 +27,12 @@ async function applyTemplate({filename, temporaryDirectory, exclude, command}) {
 		loadYamlFile(remoteWorkflowPath)
 	]);
 
-	let env;
-	// If either env object exist, we need to merge them and move them to the top
-	if (local.parsed?.env || remote.parsed.env) {
-		// Merge env objects, allowing the local to override the remote
-		env = {...remote.parsed.env, ...local.parsed?.env};
+	// Merge ENV objects if any, allowing the local to override the remote
+	const env = {...remote.parsed.env, ...local.parsed?.env};
 
-		// Hide remote env object so it can be displayed on the top later
+	// If the remote has any ENVs, they need to be dropped
+	if (remote.parsed.env && Object.keys(remote.parsed.env).length > 0) {
 		delete remote.parsed.env;
-
-		// Update workflow string, only now that is necessary
 		remote.string = yaml.safeDump(remote.parsed, {noCompatMode: true});
 	}
 
@@ -49,7 +45,7 @@ async function applyTemplate({filename, temporaryDirectory, exclude, command}) {
 	}
 
 	await fs.writeFile(localWorkflowPath, outdent`
-		${env ? yaml.safeDump({env}) : 'env:'}
+		${yaml.safeDump({env})}
 		# DO NOT EDIT BELOW - use \`npx ghat ${command}\`
 
 		${await remote.string}`
