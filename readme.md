@@ -4,8 +4,8 @@
 
 You can run `ghat` **once** to set up your workflow in a new repo or run it every time you want to update it.
 
-1. Write workflows once, use them on any repository
-2. Update your workflows without copy-pasting YAML code
+1. Write workflows once, use them in any repository
+2. Update your workflows without copy-pasting YAML
 3. Preserve [local `env` variables](#env-object)
 4. Customize workflows by [excluding jobs](#exclude-properties)
 
