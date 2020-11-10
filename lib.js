@@ -1,11 +1,10 @@
 'use strict';
+const os = require('os');
 const fs = require('fs/promises');
 const path = require('path');
 const yaml = require('js-yaml');
 const degit = require('degit');
-const tempy = require('tempy');
 const globby = require('globby');
-const mkdirp = require('mkdirp');
 const dotProp = require('dot-prop');
 const {outdent} = require('outdent');
 
@@ -73,20 +72,21 @@ async function ghat(source, {exclude, command}) {
 		verbose: true
 	});
 
-	return tempy.directory.task(async temporaryDirectory => {
-		const file = getter.repo.subdir && path.parse(getter.repo.subdir);
+	const temporaryDirectory = await fs.mkdtemp(path.join(os.tmpdir(), 'ghat-'));
+	const file = getter.repo.subdir && path.parse(getter.repo.subdir);
 
-		// If `source` points to a file, .clone() must receive a path to the file
-		await getter.clone(file?.ext ? path.join(temporaryDirectory, file.base) : temporaryDirectory);
+	// If `source` points to a file, .clone() must receive a path to the file
+	await getter.clone(file?.ext ? path.join(temporaryDirectory, file.base) : temporaryDirectory);
 
-		const templates = await getWorkflows(temporaryDirectory);
-		if (templates.length === 0) {
-			throw new InputError('No workflows found in ' + source);
-		}
+	const templates = await getWorkflows(temporaryDirectory);
+	if (templates.length === 0) {
+		throw new InputError('No workflows found in ' + source);
+	}
 
-		mkdirp.sync('.github/workflows');
-		await Promise.all(templates.map(filename => applyTemplate({filename, temporaryDirectory, exclude, command})));
+	await fs.mkdir('.github/workflows', {
+		recursive: true
 	});
+	await Promise.all(templates.map(filename => applyTemplate({filename, temporaryDirectory, exclude, command})));
 }
 
 module.exports = ghat;
