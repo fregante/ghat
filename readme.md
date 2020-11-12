@@ -25,13 +25,17 @@ $ ghat --help
     $ ghat <source> [options]
 
   Options
-    --exclude        Any part of the YAML file to be removed (can be repeated) specified as a dot.notation.path
+    --exclude        Any part of the YAML file to be removed (can be repeated)
+    --set            Value to add (can be repeated). The value is interpreted as YAML/JSON. Writing JSON on the CLI is tricky, so you might want to wrap the whole flag value
     -v, --version    Displays current version
     -h, --help       Displays this message
 
   Examples
     $ ghat fregante/ghatemplates/node
     $ ghat fregante/ghatemplates/node --exclude jobs.Build --exclude jobs.Test
+    $ ghat fregante/ghatemplates/node --set on=push
+    $ ghat fregante/ghatemplates/node --set 'jobs.Test.container=node:12.15'
+    $ ghat fregante/ghatemplates/node-multi --set jobs.build.strategy.matrix.node-version=\[8.x,10.x\]
     $ ghat fregante/ghatemplates/node/build.yml
 ```
 
@@ -62,7 +66,26 @@ npx ghat fregante/ghatemplates/node/ci.yml
 
 ### Exclude properties
 
-You can exclude any property from the template by using the `--exclude` flag multiple times. This will [delete](https://github.com/sindresorhus/dot-prop) each of the specified values dot notations.
+You can exclude any property from the template by using the `--exclude <path>` flag, multiple times.
+
+- `path` is parsed by [dot-prop](https://github.com/sindresorhus/dot-prop), so refer to its documentation.
+
+```sh
+--exclude 'on.schedule
+```
+
+### Set properties
+
+You can set/overwrite any value with the `--set <path>=<value>` flag, multiple times.
+
+- `path` is parsed by [dot-prop](https://github.com/sindresorhus/dot-prop), so refer to its documentation.
+- `value` is a YAML/JSON value passed directly to the YAML parser.
+
+Note: writing JSON on the command line is a little tricky, so if you're running into errors, try wrapping the whole flag value into a string, for example:
+
+```sh
+--set 'on.schedule=[{"cron": "42 17 * * 4"}]'
+```
 
 ### `env` object
 

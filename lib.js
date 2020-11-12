@@ -6,6 +6,7 @@ const yaml = require('js-yaml');
 const degit = require('degit');
 const dotProp = require('dot-prop');
 const {outdent} = require('outdent');
+const splitOnFirst = require('split-on-first');
 
 class InputError extends Error {}
 
@@ -43,7 +44,7 @@ async function getWorkflows(directory) {
 	return findYamlFiles(directory, '.github/workflows');
 }
 
-async function ghat(source, {exclude, command}) {
+async function ghat(source, {exclude, set, command}) {
 	if (!source) {
 		throw new InputError('No source was specified');
 	}
@@ -75,13 +76,15 @@ async function ghat(source, {exclude, command}) {
 			loadYamlFile(remoteWorkflowPath)
 		]);
 
+		let needsUpdate = false;
+
 		// Merge ENV objects if any, allowing the local to override the remote
 		const env = {...remote.parsed.env, ...local.parsed?.env};
 
 		// If the remote has any ENVs, they need to be dropped
 		if (remote.parsed.env && Object.keys(remote.parsed.env).length > 0) {
 			delete remote.parsed.env;
-			remote.string = yaml.safeDump(remote.parsed, {noCompatMode: true});
+			needsUpdate = true;
 		}
 
 		if (exclude.length > 0) {
@@ -89,6 +92,20 @@ async function ghat(source, {exclude, command}) {
 				dotProp.delete(remote.parsed, path);
 			}
 
+			needsUpdate = true;
+		}
+
+		if (set.length > 0) {
+			for (const setting of set) {
+				const [path, value] = splitOnFirst(setting, '=');
+				console.log(value);
+				dotProp.set(remote.parsed, path, yaml.safeLoad(value));
+			}
+
+			needsUpdate = true;
+		}
+
+		if (needsUpdate) {
 			remote.string = yaml.safeDump(remote.parsed, {noCompatMode: true});
 		}
 
