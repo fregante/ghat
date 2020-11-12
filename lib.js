@@ -6,6 +6,7 @@ const yaml = require('js-yaml');
 const degit = require('degit');
 const dotProp = require('dot-prop');
 const {outdent} = require('outdent');
+const shellEscape = require('shell-escape');
 const splitOnFirst = require('split-on-first');
 
 class InputError extends Error {}
@@ -44,7 +45,7 @@ async function getWorkflows(directory) {
 	return findYamlFiles(directory, '.github/workflows');
 }
 
-async function ghat(source, {exclude, set, command}) {
+async function ghat(source, {exclude, set, argv}) {
 	if (!source) {
 		throw new InputError('No source was specified');
 	}
@@ -98,7 +99,6 @@ async function ghat(source, {exclude, set, command}) {
 		if (set.length > 0) {
 			for (const setting of set) {
 				const [path, value] = splitOnFirst(setting, '=');
-				console.log(value);
 				dotProp.set(remote.parsed, path, yaml.safeLoad(value));
 			}
 
@@ -111,7 +111,7 @@ async function ghat(source, {exclude, set, command}) {
 
 		await fs.writeFile(localWorkflowPath, outdent`
 			${yaml.safeDump({env})}
-			# DO NOT EDIT BELOW - use \`npx ghat ${command}\`
+			# DO NOT EDIT BELOW, USE: npx ghat ${shellEscape(argv.slice(2))}
 
 			${await remote.string}`
 		);

@@ -23,18 +23,20 @@ const prog = sade(pkg.name + ' <source>', true)
 	.example('fregante/ghatemplates/node/build.yml ')
 	.option('--exclude', 'Any part of the YAML file to be removed (can be repeated)')
 	.option('--set', 'Value to add (can be repeated). The value is interpreted as YAML/JSON. Writing JSON on the CLI is tricky, so you might want to wrap the whole flag value')
-	.action((source, options) => {
-		const command = process.argv.slice(2).join(' ');
+	.action(async (source, options) => {
 		normalizeFlagArray(options, 'exclude');
 		normalizeFlagArray(options, 'set');
+		options.argv = process.argv;
 
-		ghat(source, {...options, command}).catch(error => {
+		try {
+			await ghat(source, options);
+		} catch (error) {
 			if (error instanceof ghat.InputError) {
 				console.error('❌', error.message);
 				prog.help();
 			} else {
 				throw error;
 			}
-		});
+		}
 	})
 	.parse(process.argv);
