@@ -35,6 +35,7 @@
 		"js-yaml": "^3.14.0",
 		"outdent": "^0.7.1",
 		"sade": "^1.7.4",
+		"split-on-first": "^2.0.0",
 		"xo": "^0.34.2"
 	},
 	"dependencies": {}
