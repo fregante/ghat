@@ -17,10 +17,12 @@ async function loadYamlFile(path) {
 	};
 }
 
-async function findYamlFiles(path) {
+async function findYamlFiles(cwd, ...sub) {
 	try {
-		const contents = await fs.readdir(path);
-		return contents.filter(filename => /\.ya?ml$/.test(filename));
+		const contents = await fs.readdir(path.join(cwd, ...sub));
+		return contents
+			.filter(filename => /\.ya?ml$/.test(filename))
+			.map(filename => path.join(...sub, filename));
 	} catch (error) {
 		if (error.message.startsWith('ENOENT')) {
 			return [];
@@ -38,7 +40,7 @@ async function getWorkflows(directory) {
 	}
 
 	// If not, the user probably wants to copy workflows from a regular repo
-	return findYamlFiles(path.join(directory, '.github/workflows'));
+	return findYamlFiles(directory, '.github/workflows');
 }
 
 async function ghat(source, {exclude, command}) {
