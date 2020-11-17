@@ -12,7 +12,7 @@ On first run, `ghat` will copy a workflow from another GitHub repo. Successive r
 The good parts:
 
 - `ghat` doesn't have to be a dependency of your project
-- `ghat` is languange-independent, as long as you habe `npx` (npm) or `yarn` installed (use `yarn dlx ghat ...`)
+- `ghat` is languange-independent, as long as you have `npx` (npm) or `yarn` installed (use `yarn dlx ghat ...`)
 - Workflow changes need to be committed by the user, so you don't have to worry about it suddenly breaking "because of a dependency"
 
 ## Usage
