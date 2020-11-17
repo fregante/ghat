@@ -7,7 +7,7 @@ On first run, `ghat` will copy a workflow from another GitHub repo. Successive r
 1. Write workflows once, use them in any repository
 2. Update your workflows without copy-pasting YAML
 3. Preserve [local `env` variables](#env-object)
-4. [Customize workflows]](#exclude-properties) before importing them
+4. [Customize workflows](#exclude-properties) before importing them
 
 The good parts:
 
