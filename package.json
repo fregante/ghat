@@ -1,8 +1,21 @@
 {
 	"name": "ghat",
-	"version": "0.3.0",
-	"description": "Reuse GitHub Action workflows across repositories",
-	"keywords": [],
+	"version": "0.11.1",
+	"description": "Reuse GitHub Actions workflows across repositories",
+	"keywords": [
+		"github",
+		"actions",
+		"workflows",
+		"share",
+		"templating",
+		"template",
+		"download",
+		"shareable",
+		"update",
+		"import",
+		"require",
+		"scaffolding"
+	],
 	"repository": "fregante/ghat",
 	"license": "MIT",
 	"author": "Federico Brigante <me@fregante.com> (fregante.com)",
@@ -19,10 +32,12 @@
 		"@vercel/ncc": "^0.25.1",
 		"degit": "^2.8.0",
 		"dot-prop": "^6.0.0",
-		"globby": "^11.0.1",
 		"js-yaml": "^3.14.0",
-		"meow": "^8.0.0",
 		"outdent": "^0.7.1",
+		"sade": "^1.7.4",
+		"shell-escape": "^0.2.0",
+		"split-on-first": "^2.0.0",
 		"xo": "^0.34.2"
-	}
+	},
+	"dependencies": {}
 }

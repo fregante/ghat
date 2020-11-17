@@ -4,9 +4,10 @@ const fs = require('fs/promises');
 const path = require('path');
 const yaml = require('js-yaml');
 const degit = require('degit');
-const globby = require('globby');
 const dotProp = require('dot-prop');
 const {outdent} = require('outdent');
+const shellEscape = require('shell-escape');
+const splitOnFirst = require('split-on-first');
 
 class InputError extends Error {}
 
@@ -18,18 +19,33 @@ async function loadYamlFile(path) {
 	};
 }
 
-async function getWorkflows(cwd) {
+async function findYamlFiles(cwd, ...sub) {
+	try {
+		const contents = await fs.readdir(path.join(cwd, ...sub));
+		return contents
+			.filter(filename => /\.ya?ml$/.test(filename))
+			.map(filename => path.join(...sub, filename));
+	} catch (error) {
+		if (error.message.startsWith('ENOENT')) {
+			return [];
+		}
+
+		throw error;
+	}
+}
+
+async function getWorkflows(directory) {
 	// Expect to find workflows in the specified folder or "workflow template repo"
-	const local = await globby('*.+(yml|yaml)', {cwd});
+	const local = await findYamlFiles(directory);
 	if (local.length > 0) {
 		return local;
 	}
 
 	// If not, the user probably wants to copy workflows from a regular repo
-	return globby('.github/workflows/*.+(yml|yaml)', {cwd});
+	return findYamlFiles(directory, '.github/workflows');
 }
 
-async function ghat(source, {exclude, command}) {
+async function ghat(source, {exclude, set, argv}) {
 	if (!source) {
 		throw new InputError('No source was specified');
 	}
@@ -61,13 +77,15 @@ async function ghat(source, {exclude, command}) {
 			loadYamlFile(remoteWorkflowPath)
 		]);
 
+		let needsUpdate = false;
+
 		// Merge ENV objects if any, allowing the local to override the remote
 		const env = {...remote.parsed.env, ...local.parsed?.env};
 
 		// If the remote has any ENVs, they need to be dropped
 		if (remote.parsed.env && Object.keys(remote.parsed.env).length > 0) {
 			delete remote.parsed.env;
-			remote.string = yaml.safeDump(remote.parsed, {noCompatMode: true});
+			needsUpdate = true;
 		}
 
 		if (exclude.length > 0) {
@@ -75,12 +93,25 @@ async function ghat(source, {exclude, command}) {
 				dotProp.delete(remote.parsed, path);
 			}
 
+			needsUpdate = true;
+		}
+
+		if (set.length > 0) {
+			for (const setting of set) {
+				const [path, value] = splitOnFirst(setting, '=');
+				dotProp.set(remote.parsed, path, yaml.safeLoad(value));
+			}
+
+			needsUpdate = true;
+		}
+
+		if (needsUpdate) {
 			remote.string = yaml.safeDump(remote.parsed, {noCompatMode: true});
 		}
 
 		await fs.writeFile(localWorkflowPath, outdent`
 			${yaml.safeDump({env})}
-			# DO NOT EDIT BELOW - use \`npx ghat ${command}\`
+			# DO NOT EDIT BELOW, USE: npx ghat ${shellEscape(argv.slice(2))}
 
 			${await remote.string}`
 		);
