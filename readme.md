@@ -11,13 +11,20 @@ On first run, `ghat` will copy a workflow from another GitHub repo. Successive r
 
 The good parts:
 
+- `ghat` does not run every time on your CI
 - `ghat` doesn't have to be a dependency of your project
-- `ghat` is languange-independent, as long as you have `npx` (npm) or `yarn` installed (use `yarn dlx ghat ...`)
+- `ghat` is node-based, but can install any type of workflows
 - Workflow changes need to be committed by the user, so you don't have to worry about it suddenly breaking "because of a dependency"
+
+Requirements:
+
+- git
+- npm or yarn (you can use [`npx ghat ...`](https://www.npmjs.com/package/npx) or [`yarn dlx ghat ...`](https://yarnpkg.com/cli/dlx) to run it without installing it)
+- a writable `~/.degit` cache folder as required by [degit](https://github.com/Rich-Harris/degit)
 
 ## Usage
 
-`ghat` uses [degit](https://github.com/Rich-Harris/degit#basics) to fetch any repository or specific file/folder within it. Below you can find some examples using the workflows in [fregante/ghatemplates](https://github.com/fregante/ghatemplates).
+`ghat` uses [degit](https://github.com/Rich-Harris/degit#basics) to fetch any repository or specific YAML file/folder within it. Below you can find some examples using the workflows in [fregante/ghatemplates](https://github.com/fregante/ghatemplates).
 
 ```sh
 $ ghat --help
@@ -45,7 +52,7 @@ $ ghat --help
 
 ### Fetch repo
 
-If you provide a user/repo address, `ghat` will fetch the repository and look for `*.yml`/`*.yaml` files at the top level. If none are found, it will assume you want to copy the repo’s active workflows from `.github/workflows`
+If you provide a `user/repo` address, `ghat` will fetch the repository and look for `*.yml`/`*.yaml` files at the top level. If none are found, it will assume you want to copy the repo’s active workflows from `.github/workflows`
 
 ```sh
 npx ghat fregante/ghat
