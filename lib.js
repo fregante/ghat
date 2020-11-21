@@ -60,17 +60,7 @@ async function ghat(source, {exclude, set, argv}) {
 
 	// If `source` points to a file, .clone() must receive a path to the file
 	const destination = file?.ext ? path.join(temporaryDirectory, file.base) : temporaryDirectory;
-	try {
-		await getter.clone(destination);
-	} catch (error) {
-		if (error.message === 'could not find commit hash for master') {
-			// Try again using `main` since `degit` only supports `master` https://github.com/Rich-Harris/degit/issues/207
-			getter.repo.ref = 'main';
-			await getter.clone(destination);
-		} else {
-			throw error;
-		}
-	}
+	await getter.clone(destination);
 
 	const templates = await getWorkflows(temporaryDirectory);
 	if (templates.length === 0) {
