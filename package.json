@@ -30,7 +30,7 @@
 	},
 	"devDependencies": {
 		"@vercel/ncc": "^0.25.1",
-		"degit": "^2.8.0",
+		"degitto": "^2.8.2",
 		"dot-prop": "^6.0.0",
 		"js-yaml": "^3.14.0",
 		"outdent": "^0.7.1",
