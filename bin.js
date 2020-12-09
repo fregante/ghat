@@ -4,6 +4,7 @@ const sade = require('sade');
 const ghat = require('./lib');
 const pkg = require('./package.json');
 
+
 function normalizeFlagArray(options, flag) {
 	if (typeof options[flag] === 'string') {
 		options[flag] = [options[flag]];
