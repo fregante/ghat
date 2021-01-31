@@ -19,7 +19,9 @@
 	"repository": "fregante/ghat",
 	"license": "MIT",
 	"author": "Federico Brigante <me@fregante.com> (fregante.com)",
-	"bin": "dist/index.js",
+	"bin": {
+		"ghat": "dist/index.js"
+	},
 	"files": [
 		"dist/index.js"
 	],
@@ -28,16 +30,16 @@
 		"prepack": "npm run build",
 		"test": "npm run build && xo"
 	},
+	"dependencies": {},
 	"devDependencies": {
-		"@vercel/ncc": "^0.25.1",
+		"@vercel/ncc": "^0.27.0",
 		"degitto": "^2.8.2",
-		"dot-prop": "^6.0.0",
-		"js-yaml": "^3.14.0",
-		"outdent": "^0.7.1",
+		"dot-prop": "^6.0.1",
+		"js-yaml": "^4.0.0",
+		"outdent": "^0.8.0",
 		"sade": "^1.7.4",
 		"shell-escape": "^0.2.0",
-		"split-on-first": "^2.0.0",
-		"xo": "^0.34.2"
-	},
-	"dependencies": {}
+		"split-on-first": "^2.0.1",
+		"xo": "^0.37.1"
+	}
 }

@@ -15,7 +15,7 @@ async function loadYamlFile(path) {
 	const string = await fs.readFile(path, 'utf8').catch(() => '');
 	return {
 		string,
-		parsed: string ? yaml.safeLoad(string) : {}
+		parsed: string ? yaml.load(string) : {}
 	};
 }
 
@@ -99,18 +99,18 @@ async function ghat(source, {exclude, set, argv}) {
 		if (set.length > 0) {
 			for (const setting of set) {
 				const [path, value] = splitOnFirst(setting, '=');
-				dotProp.set(remote.parsed, path, yaml.safeLoad(value));
+				dotProp.set(remote.parsed, path, yaml.load(value));
 			}
 
 			needsUpdate = true;
 		}
 
 		if (needsUpdate) {
-			remote.string = yaml.safeDump(remote.parsed, {noCompatMode: true});
+			remote.string = yaml.dump(remote.parsed, {noCompatMode: true});
 		}
 
 		await fs.writeFile(localWorkflowPath, outdent`
-			${yaml.safeDump({env})}
+			${yaml.dump({env})}
 			# DO NOT EDIT BELOW, USE: npx ghat ${shellEscape(argv.slice(2))}
 
 			${await remote.string}`

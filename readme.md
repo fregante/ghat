@@ -153,8 +153,7 @@ jobs:
 **A**ctions
 **T**emplating
 
-I won’t pretend to know exactly what a ***Ghat*** is, but you should know [check them out,](https://en.wikipedia.org/wiki/Ghat) they’re [beautiful. 🇮🇳](https://www.gettyimages.com/global-location?requested_location=USA&requested_language=en-US&destination_url=%2Ffotos%2Fghat)
-
+I won’t pretend to know exactly what a **_Ghat_** is, but you should know [check them out,](https://en.wikipedia.org/wiki/Ghat) they’re [beautiful. 🇮🇳](https://www.gettyimages.com/global-location?requested_location=USA&requested_language=en-US&destination_url=%2Ffotos%2Fghat)
 
 ## License
 
