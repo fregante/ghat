@@ -12,7 +12,9 @@ function normalizeFlagArray(options, flag) {
 	}
 }
 
-const prog = sade(pkg.name + ' <source>', true)
+const prog = sade(pkg.name + ' <source>', true);
+
+prog
 	.version(pkg.version)
 	.describe(pkg.description)
 	.example('fregante/ghatemplates/node')
@@ -33,7 +35,7 @@ const prog = sade(pkg.name + ' <source>', true)
 		} catch (error) {
 			if (error instanceof ghat.InputError) {
 				console.error('❌', error.message);
-				prog.help();
+				process.exit(1);
 			} else {
 				throw error;
 			}
