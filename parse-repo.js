@@ -9,7 +9,7 @@ class DegitError extends Error {
 	}
 }
 
-module.exports = function parse(src) {
+module.exports = src => {
 	const match = /^(?:(?:https:\/\/)?([^:/]+\.[^:/]+)\/|git@([^:/]+)[:/]|([^/]+):)?([^/\s]+)\/([^/\s#]+)(?:((?:\/[^/\s#]+)+))?\/?(?:#(.+))?/.exec(
 		src
 	);
