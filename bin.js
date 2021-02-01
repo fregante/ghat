@@ -28,7 +28,6 @@ prog
 	.action(async (source, options) => {
 		normalizeFlagArray(options, 'exclude');
 		normalizeFlagArray(options, 'set');
-		options.argv = process.argv;
 
 		try {
 			await ghat(source, options);
