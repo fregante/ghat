@@ -12,6 +12,8 @@ const getRepoUrl = require('./parse-repo.js');
 
 class InputError extends Error {}
 
+const settingsParser = /# FILE GENERATED WITH: npx ghat (?<source>[^\n]+).+\n# OPTIONS: (?<options>\{[^\n]+\})\s*\n/s;
+
 async function loadYamlFile(path) {
 	const string = await fs.readFile(path, 'utf8').catch(() => '');
 	return {
@@ -46,10 +48,40 @@ async function getWorkflows(directory) {
 	return findYamlFiles(directory, '.github/workflows');
 }
 
+async function getExisting() {
+	const existing = [];
+	for (const workflowPath of await findYamlFiles('.', '.github/workflows')) {
+		const contents = await fs.readFile(workflowPath, 'utf8');
+		const ghatConfig = contents.match(settingsParser);
+		if (ghatConfig) {
+			existing.push({
+				path: workflowPath,
+				source: ghatConfig.groups.source,
+				options: JSON.parse(ghatConfig.groups.options)
+			});
+		}
+	}
+
+	return existing;
+}
+
 async function ghat(source, {exclude, set}) {
 	if (!source) {
-		throw new InputError('No source was specified');
+		const existing = await getExisting();
+		if (existing) {
+			console.log(
+				'Updating existing workflows:',
+				'\n' + existing.map(({path}) => '- ' + path).join('\n')
+			);
+		} else {
+			throw new InputError('No source was specified and no existing ghat workflows were found in this repository');
+		}
+
+		await Promise.all(existing.map(({source, options}) => ghat(source, options)));
+
+		return;
 	}
+
 
 	const getter = degit(source, {
 		force: true,
@@ -89,7 +121,7 @@ async function ghat(source, {exclude, set}) {
 			needsUpdate = true;
 		}
 
-		if (exclude.length > 0) {
+		if (exclude && exclude.length > 0) {
 			for (const path of exclude) {
 				dotProp.delete(remote.parsed, path);
 			}
@@ -99,7 +131,7 @@ async function ghat(source, {exclude, set}) {
 			exclude = undefined;
 		}
 
-		if (set.length > 0) {
+		if (set && set.length > 0) {
 			for (const setting of set) {
 				const [path, value] = splitOnFirst(setting, '=');
 				dotProp.set(remote.parsed, path, yaml.load(value));

@@ -1,0 +1,27 @@
+env: {}
+
+# FILE GENERATED WITH: npx ghat fregante/ghatemplates/node
+# SOURCE: https://github.com/fregante/ghatemplates
+# OPTIONS: {"exclude":["jobs.Test"]}
+
+name: CI
+on:
+  - pull_request
+  - push
+jobs:
+  Lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: install
+        run: npm ci || npm install
+      - name: XO
+        run: npx xo
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: install
+        run: npm ci || npm install
+      - name: build
+        run: npm run build
