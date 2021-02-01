@@ -1,15 +1,15 @@
 'use strict';
 const os = require('os');
 const fs = require('fs/promises');
-const util = require('util');
 const path = require('path');
 const yaml = require('js-yaml');
 const degit = require('degitto');
 const dotProp = require('dot-prop');
 const {outdent} = require('outdent');
+const {promisify} = require('util');
 const splitOnFirst = require('split-on-first');
 
-const exec = util.promisify(require('child_process').exec);
+const exec = promisify(require('child_process').exec);
 const getRepoUrl = require('./parse-repo.js');
 
 class InputError extends Error {}
@@ -50,57 +50,62 @@ async function getWorkflows(directory) {
 	return findYamlFiles(directory, '.github/workflows');
 }
 
-async function getExisting() {
+async function parseGhatConfigFromYaml(workflowPath) {
+	const contents = await fs.readFile(workflowPath, 'utf8');
+	const ghatConfig = contents.match(settingsParser);
+	if (!ghatConfig) {
+		return;
+	}
+
+	if (ghatConfig.groups.args) {
+		return {
+			path: workflowPath,
+			args: ghatConfig.groups.args
+		};
+	}
+
+	return {
+		path: workflowPath,
+		source: ghatConfig.groups.source,
+		options: JSON.parse(ghatConfig.groups.options)
+	};
+}
+
+async function handleExisting() {
 	const existing = [];
 	for (const workflowPath of await findYamlFiles('.', '.github/workflows')) {
 		// eslint-disable-next-line no-await-in-loop
-		const contents = await fs.readFile(workflowPath, 'utf8');
-		const ghatConfig = contents.match(settingsParser);
-		if (!ghatConfig) {
-			continue;
-		}
-
-		if (ghatConfig.groups.args) {
-			existing.push({
-				path: workflowPath,
-				args: ghatConfig.groups.args,
-			});
-		} else {
-			existing.push({
-				path: workflowPath,
-				source: ghatConfig.groups.source,
-				options: JSON.parse(ghatConfig.groups.options)
-			});
+		const parsed = await parseGhatConfigFromYaml(workflowPath);
+		if (parsed) {
+			existing.push(parsed);
 		}
 	}
 
-	return existing;
+	if (existing.length === 0) {
+		throw new InputError('No source was specified and no existing ghat workflows were found in this repository');
+	}
+
+	console.log(
+		'Updating existing workflows:',
+		'\n' + existing.map(({path}) => '- ' + path).join('\n')
+	);
+
+	await Promise.all(existing.map(({source, options, args}) => {
+		if (args) {
+			return exec([
+				'node',
+				__filename.replace('/lib.js', '/bin.js'),
+				args
+			].join(' '));
+		}
+
+		return ghat(source, options);
+	}));
 }
 
 async function ghat(source, {exclude, set}) {
 	if (!source) {
-		const existing = await getExisting();
-		if (existing) {
-			console.log(
-				'Updating existing workflows:',
-				'\n' + existing.map(({path}) => '- ' + path).join('\n')
-			);
-		} else {
-			throw new InputError('No source was specified and no existing ghat workflows were found in this repository');
-		}
-
-		await Promise.all(existing.map(({source, options, args}) => {
-			if (args) {
-				return exec([
-					'node',
-					__filename.replace('/lib.js', '/bin.js'),
-					args
-				].join(' '));
-			}
-
-			return ghat(source, options);
-		}));
-
+		await handleExisting();
 		return;
 	}
 
