@@ -14,6 +14,7 @@ const exec = promisify(require('child_process').exec);
 
 class InputError extends Error {}
 
+// TODO: Stop supporting the old one-line version in 2025
 const settingsParser = /# file generated with: npx ghat (?<source>[^\n]+).+\n# options: (?<options>{[^\n]+})\s*\n|# do not edit below[ ,-]+use[ :`]+npx ghat (?<args>[^\n`]+)/is;
 
 async function loadYamlFile(path) {
@@ -57,6 +58,7 @@ async function parseGhatConfigFromYaml(workflowPath) {
 		return;
 	}
 
+	// Legacy format
 	if (ghatConfig.groups.args) {
 		return {
 			path: workflowPath,
@@ -91,15 +93,15 @@ async function handleExisting() {
 	);
 
 	await Promise.all(existing.map(({source, options, args}) => {
-		if (args) {
-			return exec([
-				'node',
-				__filename.replace('/lib.js', '/bin.js'),
-				args
-			].join(' '));
+		if (source) {
+			return ghat(source, options);
 		}
 
-		return ghat(source, options);
+		return exec([
+			'node',
+			__filename.replace('/lib.js', '/bin.js'), // __filename will also work on the ncc’d version
+			args
+		].join(' '));
 	}));
 }
 
