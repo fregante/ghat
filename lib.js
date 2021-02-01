@@ -15,7 +15,7 @@ const exec = promisify(require('child_process').exec);
 class InputError extends Error {}
 
 // TODO: Stop supporting the old one-line version in 2025
-const settingsParser = /# file generated with: npx ghat (?<source>[^\n]+).+\n# options: (?<options>{[^\n]+})\s*\n|# do not edit below[ ,-]+use[ :`]+npx ghat (?<args>[^\n`]+)/is;
+const settingsParser = /# file generated with: npx ghat (?<source>[^\n]+)(?:.+\n# options: (?<options>{[^\n]+})\s*\n)?|# do not edit below[ ,-]+use[ :`]+npx ghat (?<args>[^\n`]+)/is;
 
 async function loadYamlFile(path) {
 	const string = await fs.readFile(path, 'utf8').catch(() => '');
@@ -69,7 +69,7 @@ async function parseGhatConfigFromYaml(workflowPath) {
 	return {
 		path: workflowPath,
 		source: ghatConfig.groups.source,
-		options: JSON.parse(ghatConfig.groups.options)
+		options: ghatConfig.groups.options && JSON.parse(ghatConfig.groups.options)
 	};
 }
 
