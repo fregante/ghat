@@ -4,14 +4,6 @@ const sade = require('sade');
 const ghat = require('./lib');
 const pkg = require('./package.json');
 
-function normalizeFlagArray(options, flag) {
-	if (typeof options[flag] === 'string') {
-		options[flag] = [options[flag]];
-	} else if (!options[flag]) {
-		options[flag] = [];
-	}
-}
-
 const prog = sade(pkg.name + ' [source]', true);
 
 prog
@@ -26,9 +18,6 @@ prog
 	.option('--exclude', 'Any part of the YAML file to be removed (can be repeated)')
 	.option('--set', 'Value to add (can be repeated). The value is interpreted as YAML/JSON. Writing JSON on the CLI is tricky, so you might want to wrap the whole flag value')
 	.action(async (source, options) => {
-		normalizeFlagArray(options, 'exclude');
-		normalizeFlagArray(options, 'set');
-
 		try {
 			await ghat(source, options);
 		} catch (error) {

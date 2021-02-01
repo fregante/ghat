@@ -105,10 +105,19 @@ async function handleExisting() {
 	}));
 }
 
-async function ghat(source, {exclude, set}) {
+async function ghat(source, {exclude, set} = {}) {
 	if (!source) {
 		await handleExisting();
 		return;
+	}
+
+	// Normalize inputs
+	if (typeof exclude === 'string') {
+		exclude = [exclude];
+	}
+
+	if (typeof set === 'string') {
+		set = [set];
 	}
 
 	const getter = degit(source, {
