@@ -9,8 +9,8 @@ const {outdent} = require('outdent');
 const {promisify} = require('util');
 const splitOnFirst = require('split-on-first');
 
-const exec = promisify(require('child_process').exec);
 const getRepoUrl = require('./parse-repo.js');
+const exec = promisify(require('child_process').exec);
 
 class InputError extends Error {}
 
