@@ -105,10 +105,18 @@ async function handleExisting() {
 	}));
 }
 
-async function ghat(source, {exclude, set} = {}) {
+async function ghat(source, {exclude, set, verbatim = false} = {}) {
 	if (!source) {
+		if (exclude || set || verbatim) {
+			throw new InputError('If you don’t specifiy a source, any further options won’t be applied');
+		}
+
 		await handleExisting();
 		return;
+	}
+
+	if (verbatim && (set || exclude)) {
+		throw new InputError('`verbatim` can’t be used together with `set`/`exclude`');
 	}
 
 	// Normalize inputs
@@ -146,6 +154,11 @@ async function ghat(source, {exclude, set} = {}) {
 			loadYamlFile(localWorkflowPath),
 			loadYamlFile(remoteWorkflowPath)
 		]);
+
+		if (verbatim) {
+			await fs.writeFile(localWorkflowPath, await remote.string);
+			return;
+		}
 
 		let needsUpdate = false;
 
