@@ -30,7 +30,6 @@
 		"prepack": "npm run build",
 		"test": "npm run build && xo"
 	},
-	"dependencies": {},
 	"devDependencies": {
 		"@vercel/ncc": "^0.27.0",
 		"degitto": "^2.8.2",
@@ -38,7 +37,6 @@
 		"js-yaml": "^4.0.0",
 		"outdent": "^0.8.0",
 		"sade": "^1.7.4",
-		"shell-escape": "^0.2.0",
 		"split-on-first": "^2.0.1",
 		"xo": "^0.37.1"
 	}

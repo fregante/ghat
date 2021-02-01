@@ -6,8 +6,9 @@ const yaml = require('js-yaml');
 const degit = require('degitto');
 const dotProp = require('dot-prop');
 const {outdent} = require('outdent');
-const shellEscape = require('shell-escape');
 const splitOnFirst = require('split-on-first');
+
+const getRepoUrl = require('./parse-repo.js');
 
 class InputError extends Error {}
 
@@ -45,7 +46,7 @@ async function getWorkflows(directory) {
 	return findYamlFiles(directory, '.github/workflows');
 }
 
-async function ghat(source, {exclude, set, argv}) {
+async function ghat(source, {exclude, set}) {
 	if (!source) {
 		throw new InputError('No source was specified');
 	}
@@ -94,6 +95,8 @@ async function ghat(source, {exclude, set, argv}) {
 			}
 
 			needsUpdate = true;
+		} else {
+			exclude = undefined;
 		}
 
 		if (set.length > 0) {
@@ -103,15 +106,28 @@ async function ghat(source, {exclude, set, argv}) {
 			}
 
 			needsUpdate = true;
+		} else {
+			set = undefined;
 		}
 
 		if (needsUpdate) {
 			remote.string = yaml.dump(remote.parsed, {noCompatMode: true});
 		}
 
+		const comments = [
+			`FILE GENERATED WITH: npx ghat ${source}`,
+			`SOURCE: ${getRepoUrl(source).url}`
+		];
+
+		if (exclude || set) {
+			comments.push(
+				`OPTIONS: ${JSON.stringify({exclude, set})}`
+			);
+		}
+
 		await fs.writeFile(localWorkflowPath, outdent`
 			${yaml.dump({env})}
-			# DO NOT EDIT BELOW, USE: npx ghat ${shellEscape(argv.slice(2))}
+			${comments.map(line => '# ' + line).join('\n')}
 
 			${await remote.string}`
 		);
