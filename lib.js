@@ -6,11 +6,16 @@ const yaml = require('js-yaml');
 const degit = require('degitto');
 const dotProp = require('dot-prop');
 const {outdent} = require('outdent');
+const {promisify} = require('util');
 const splitOnFirst = require('split-on-first');
 
 const getRepoUrl = require('./parse-repo.js');
+const exec = promisify(require('child_process').exec);
 
 class InputError extends Error {}
+
+// TODO: Stop supporting the old one-line version in 2025
+const settingsParser = /# file generated with: npx ghat (?<source>[^\n]+).+\n# options: (?<options>{[^\n]+})\s*\n|# do not edit below[ ,-]+use[ :`]+npx ghat (?<args>[^\n`]+)/is;
 
 async function loadYamlFile(path) {
 	const string = await fs.readFile(path, 'utf8').catch(() => '');
@@ -46,9 +51,64 @@ async function getWorkflows(directory) {
 	return findYamlFiles(directory, '.github/workflows');
 }
 
+async function parseGhatConfigFromYaml(workflowPath) {
+	const contents = await fs.readFile(workflowPath, 'utf8');
+	const ghatConfig = contents.match(settingsParser);
+	if (!ghatConfig) {
+		return;
+	}
+
+	// Legacy format
+	if (ghatConfig.groups.args) {
+		return {
+			path: workflowPath,
+			args: ghatConfig.groups.args
+		};
+	}
+
+	return {
+		path: workflowPath,
+		source: ghatConfig.groups.source,
+		options: JSON.parse(ghatConfig.groups.options)
+	};
+}
+
+async function handleExisting() {
+	const existing = [];
+	for (const workflowPath of await findYamlFiles('.', '.github/workflows')) {
+		// eslint-disable-next-line no-await-in-loop
+		const parsed = await parseGhatConfigFromYaml(workflowPath);
+		if (parsed) {
+			existing.push(parsed);
+		}
+	}
+
+	if (existing.length === 0) {
+		throw new InputError('No source was specified and no existing ghat workflows were found in this repository');
+	}
+
+	console.log(
+		'Updating existing workflows:',
+		'\n' + existing.map(({path}) => '- ' + path).join('\n')
+	);
+
+	await Promise.all(existing.map(({source, options, args}) => {
+		if (source) {
+			return ghat(source, options);
+		}
+
+		return exec([
+			'node',
+			__filename.replace('/lib.js', '/bin.js'), // __filename will also work on the ncc’d version
+			args
+		].join(' '));
+	}));
+}
+
 async function ghat(source, {exclude, set}) {
 	if (!source) {
-		throw new InputError('No source was specified');
+		await handleExisting();
+		return;
 	}
 
 	const getter = degit(source, {
@@ -89,7 +149,7 @@ async function ghat(source, {exclude, set}) {
 			needsUpdate = true;
 		}
 
-		if (exclude.length > 0) {
+		if (exclude && exclude.length > 0) {
 			for (const path of exclude) {
 				dotProp.delete(remote.parsed, path);
 			}
@@ -99,7 +159,7 @@ async function ghat(source, {exclude, set}) {
 			exclude = undefined;
 		}
 
-		if (set.length > 0) {
+		if (set && set.length > 0) {
 			for (const setting of set) {
 				const [path, value] = splitOnFirst(setting, '=');
 				dotProp.set(remote.parsed, path, yaml.load(value));

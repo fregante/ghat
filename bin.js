@@ -12,7 +12,7 @@ function normalizeFlagArray(options, flag) {
 	}
 }
 
-const prog = sade(pkg.name + ' <source>', true);
+const prog = sade(pkg.name + ' [source]', true);
 
 prog
 	.version(pkg.version)
