@@ -1,5 +1,13 @@
 // Extracted from degit
+// TODO: Export from degitto instead
 const supported = new Set(['github', 'gitlab', 'bitbucket', 'git.sr.ht']);
+
+class DegitError extends Error {
+	constructor(message, options) {
+		super(message);
+		Object.assign(this, options);
+	}
+}
 
 module.exports = function parse(src) {
 	const match = /^(?:(?:https:\/\/)?([^:/]+\.[^:/]+)\/|git@([^:/]+)[:/]|([^/]+):)?([^/\s]+)\/([^/\s#]+)(?:((?:\/[^/\s#]+)+))?\/?(?:#(.+))?/.exec(
