@@ -1,8 +1,8 @@
 env: {}
 
-# FILE GENERATED WITH: npx ghat
+# FILE GENERATED WITH: npx ghat fregante/ghatemplates/node
 # SOURCE: https://github.com/fregante/ghatemplates
-# OPTIONS: {"source":"fregante/ghatemplates/node","exclude":["jobs.Test"]}
+# OPTIONS: {"exclude":["jobs.Test"]}
 
 name: CI
 on:

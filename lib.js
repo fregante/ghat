@@ -114,11 +114,20 @@ async function ghat(source, {exclude, set}) {
 			remote.string = yaml.dump(remote.parsed, {noCompatMode: true});
 		}
 
+		const comments = [
+			`FILE GENERATED WITH: npx ghat ${source}`,
+			`SOURCE: ${getRepoUrl(source).url}`
+		];
+
+		if (exclude || set) {
+			comments.push(
+				`OPTIONS: ${JSON.stringify({exclude, set})}`
+			);
+		}
+
 		await fs.writeFile(localWorkflowPath, outdent`
 			${yaml.dump({env})}
-			# FILE GENERATED WITH: npx ghat
-			# SOURCE: ${getRepoUrl(source).url}
-			# OPTIONS: ${JSON.stringify({source, exclude, set})}
+			${comments.map(line => '# ' + line).join('\n')}
 
 			${await remote.string}`
 		);
