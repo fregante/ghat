@@ -114,11 +114,11 @@ async function ghat(source, {exclude, set}) {
 			remote.string = yaml.dump(remote.parsed, {noCompatMode: true});
 		}
 
-		const {url, subdir} = getRepoUrl(source);
-		env.ghat = {source: url + subdir, exclude, set};
 		await fs.writeFile(localWorkflowPath, outdent`
 			${yaml.dump({env})}
 			# FILE GENERATED WITH: npx ghat
+			# SOURCE: ${getRepoUrl(source).url}
+			# OPTIONS: ${JSON.stringify({source, exclude, set})}
 
 			${await remote.string}`
 		);

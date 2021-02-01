@@ -1,10 +1,8 @@
-env:
-  ghat:
-    source: https://github.com/fregante/ghatemplates/node
-    exclude:
-      - jobs.Test
+env: {}
 
-# UPDATE FILE BY RUNNING: npx ghat
+# FILE GENERATED WITH: npx ghat
+# SOURCE: https://github.com/fregante/ghatemplates
+# OPTIONS: {"source":"fregante/ghatemplates/node","exclude":["jobs.Test"]}
 
 name: CI
 on:
