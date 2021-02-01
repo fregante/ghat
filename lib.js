@@ -1,6 +1,7 @@
 'use strict';
 const os = require('os');
 const fs = require('fs/promises');
+const util = require('util');
 const path = require('path');
 const yaml = require('js-yaml');
 const degit = require('degitto');
@@ -8,11 +9,12 @@ const dotProp = require('dot-prop');
 const {outdent} = require('outdent');
 const splitOnFirst = require('split-on-first');
 
+const exec = util.promisify(require('child_process').exec);
 const getRepoUrl = require('./parse-repo.js');
 
 class InputError extends Error {}
 
-const settingsParser = /# FILE GENERATED WITH: npx ghat (?<source>[^\n]+).+\n# OPTIONS: (?<options>\{[^\n]+\})\s*\n/s;
+const settingsParser = /# file generated with: npx ghat (?<source>[^\n]+).+\n# options: (?<options>{[^\n]+})\s*\n|# do not edit below[ ,-]+use[ :`]+npx ghat (?<args>[^\n`]+)/is;
 
 async function loadYamlFile(path) {
 	const string = await fs.readFile(path, 'utf8').catch(() => '');
@@ -51,9 +53,19 @@ async function getWorkflows(directory) {
 async function getExisting() {
 	const existing = [];
 	for (const workflowPath of await findYamlFiles('.', '.github/workflows')) {
+		// eslint-disable-next-line no-await-in-loop
 		const contents = await fs.readFile(workflowPath, 'utf8');
 		const ghatConfig = contents.match(settingsParser);
-		if (ghatConfig) {
+		if (!ghatConfig) {
+			continue;
+		}
+
+		if (ghatConfig.groups.args) {
+			existing.push({
+				path: workflowPath,
+				args: ghatConfig.groups.args,
+			});
+		} else {
 			existing.push({
 				path: workflowPath,
 				source: ghatConfig.groups.source,
@@ -77,11 +89,20 @@ async function ghat(source, {exclude, set}) {
 			throw new InputError('No source was specified and no existing ghat workflows were found in this repository');
 		}
 
-		await Promise.all(existing.map(({source, options}) => ghat(source, options)));
+		await Promise.all(existing.map(({source, options, args}) => {
+			if (args) {
+				return exec([
+					'node',
+					__filename.replace('/lib.js', '/bin.js'),
+					args
+				].join(' '));
+			}
+
+			return ghat(source, options);
+		}));
 
 		return;
 	}
-
 
 	const getter = degit(source, {
 		force: true,
