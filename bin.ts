@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 'use strict';
-const sade = require('sade');
-const ghat = require('./lib');
-const pkg = require('./package.json');
+import sade from 'sade';
+import ghat, {InputError, Options} from './lib';
+import pkg from './package.json';
 
 const prog = sade(pkg.name + ' [source]', true);
 
@@ -18,12 +18,12 @@ prog
 	.option('--exclude', 'Any part of the YAML file to be removed (can be repeated)')
 	.option('--set', 'Value to add (can be repeated). The value is interpreted as YAML/JSON. Writing JSON on the CLI is tricky, so you might want to wrap the whole flag value')
 	.option('--verbatim', 'Downloads the workflows without making any changes whatsoever')
-	.action(async (source, options) => {
+	.action(async (source: string, options: Options) => {
 		try {
 			await ghat(source, options);
-		} catch (error) {
-			if (error instanceof ghat.InputError) {
-				console.error('❌', error.message);
+		} catch (error: unknown) {
+			if (error instanceof InputError) {
+				console.error('❌', (error as Error).message);
 				process.exit(1);
 			} else {
 				throw error;
