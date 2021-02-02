@@ -2,7 +2,8 @@
 	"extends": "@sindresorhus/tsconfig",
 	"compilerOptions": {
 		"target": "es2018",
-		"noEmit": true
+		"noEmit": true,
+		"allowSyntheticDefaultImports": true
 	},
 	"files": [
 		"bin.ts",

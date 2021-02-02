@@ -33,7 +33,9 @@
 	},
 	"devDependencies": {
 		"@sindresorhus/tsconfig": "^0.8.0",
+		"@types/js-yaml": "^4.0.0",
 		"@types/node": "^14.14.22",
+		"@types/sade": "^1.7.2",
 		"@vercel/ncc": "^0.27.0",
 		"degitto": "^2.8.3",
 		"dot-prop": "^6.0.1",

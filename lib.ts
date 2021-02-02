@@ -1,20 +1,26 @@
 'use strict';
 import {promises as fs} from 'fs';
-const os = require('os');
-const path = require('path');
-const yaml = require('js-yaml');
-const degit = require('degitto');
-const dotProp = require('dot-prop');
-const {outdent} = require('outdent');
-const {promisify} = require('util');
-const splitOnFirst = require('split-on-first');
+import os from 'os';
+import path from 'path';
+import yaml from 'js-yaml';
+// @ts-expect-error
+import degit from 'degitto';
+import dotProp from 'dot-prop';
+import {outdent} from 'outdent';
+import {promisify} from 'util';
+import splitOnFirst from 'split-on-first';
+import {exec as execCallback} from 'child_process';
 
-const getRepoUrl = require('./parse-repo.js');
-const exec = promisify(require('child_process').exec);
+// @ts-expect-error
+import getRepoUrl from './parse-repo.js';
 
-class InputError extends Error {}
+type YAML = Record<string, any>;
 
-interface Options {
+const exec = promisify(execCallback);
+
+export class InputError extends Error {}
+
+export interface Options {
 	set?: string | string[];
 	exclude?: string | string[];
 	verbatim?: boolean;
@@ -27,7 +33,7 @@ async function loadYamlFile(path: string) {
 	const string = await fs.readFile(path, {encoding: 'utf-8'}).catch(() => '');
 	return {
 		string,
-		parsed: string ? yaml.load(string) : {}
+		parsed: string ? yaml.load(string) as YAML : {}
 	};
 }
 
@@ -37,8 +43,8 @@ async function findYamlFiles(cwd: string, ...sub: string[]) {
 		return contents
 			.filter(filename => /\.ya?ml$/.test(filename))
 			.map(filename => path.join(...sub, filename));
-	} catch (error) {
-		if (error.message.startsWith('ENOENT')) {
+	} catch (error: unknown) {
+		if ((error as Error).message.startsWith('ENOENT')) {
 			return [];
 		}
 
@@ -59,7 +65,7 @@ async function getWorkflows(directory: string) {
 
 async function parseGhatConfigFromYaml(workflowPath: string) {
 	const contents = await fs.readFile(workflowPath, 'utf8');
-	const ghatConfig = contents.match(settingsParser);
+	const ghatConfig = settingsParser.exec(contents);
 	if (!ghatConfig?.groups) {
 		return;
 	}
@@ -98,7 +104,7 @@ async function handleExisting() {
 		'\n' + existing.map(({path}) => '- ' + path).join('\n')
 	);
 
-	await Promise.all(existing.map(({source, options, args}) => {
+	await Promise.all(existing.map(async ({source, options, args}) => {
 		if (source) {
 			return ghat(source, options);
 		}
@@ -111,7 +117,7 @@ async function handleExisting() {
 	}));
 }
 
-async function ghat(source: string, {exclude, set, verbatim = false}: Options = {}) {
+export default async function ghat(source: string, {exclude, set, verbatim = false}: Options = {}) {
 	if (!source) {
 		if (exclude || set || verbatim) {
 			throw new InputError('If you don’t specifiy a source, any further options won’t be applied');
@@ -162,7 +168,7 @@ async function ghat(source: string, {exclude, set, verbatim = false}: Options = 
 		]);
 
 		if (verbatim) {
-			await fs.writeFile(localWorkflowPath, await remote.string);
+			await fs.writeFile(localWorkflowPath, remote.string);
 			return;
 		}
 
@@ -190,7 +196,7 @@ async function ghat(source: string, {exclude, set, verbatim = false}: Options = 
 		if (set && set.length > 0) {
 			for (const setting of set) {
 				const [path, value] = splitOnFirst(setting, '=');
-				dotProp.set(remote.parsed, path, yaml.load(value));
+				dotProp.set(remote.parsed, path, yaml.load(value!) as YAML);
 			}
 
 			needsUpdate = true;
@@ -217,14 +223,9 @@ async function ghat(source: string, {exclude, set, verbatim = false}: Options = 
 			${yaml.dump({env})}
 			${comments.map(line => '# ' + line).join('\n')}
 
-			${await remote.string}`
+			${remote.string}`
 		);
 	};
 
-	await Promise.all(templates.map(filename => applyTemplate(filename)));
+	await Promise.all(templates.map(async filename => applyTemplate(filename)));
 }
-
-module.exports = ghat;
-module.exports.InputError = InputError;
-
-export {}; // Sigh, Typescript
