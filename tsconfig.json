@@ -1,0 +1,11 @@
+{
+	"extends": "@sindresorhus/tsconfig",
+	"compilerOptions": {
+		"target": "es2018",
+		"noEmit": true
+	},
+	"files": [
+		"bin.ts",
+		"lib.ts"
+	],
+}

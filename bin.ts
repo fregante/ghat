@@ -18,7 +18,7 @@ prog
 	.option('--exclude', 'Any part of the YAML file to be removed (can be repeated)')
 	.option('--set', 'Value to add (can be repeated). The value is interpreted as YAML/JSON. Writing JSON on the CLI is tricky, so you might want to wrap the whole flag value')
 	.option('--verbatim', 'Downloads the workflows without making any changes whatsoever')
-	.action(async (source, options) => {
+	.action(async (source: string, options: Record<string, string | string[] | boolean>) => {
 		try {
 			await ghat(source, options);
 		} catch (error) {
